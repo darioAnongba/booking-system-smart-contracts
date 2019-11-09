@@ -2,7 +2,7 @@
   "name": "decentralized-booking-system",
   "version": "1.0.0",
   "description": "A completely decentralized application enabling companies to book spaces in a trustless fashion",
-  "main": "index.js",
+  "main": "dist/index.js",
   "dependencies": {},
   "devDependencies": {
     "@nomiclabs/buidler": "^1.0.1",
@@ -14,13 +14,14 @@
     "dotenv": "^8.2.0",
     "ethereum-waffle": "^2.1.0",
     "ethers": "^4.0.39",
+    "rimraf": "^3.0.0",
     "ts-node": "^8.4.1",
     "typechain": "^1.0.3",
     "typechain-target-ethers": "^1.0.1",
     "typescript": "^3.7.2"
   },
   "scripts": {
-    "build": "npm run compile && npm run typechain",
+    "build": "rimraf artifacts && npm run compile && npm run typechain && tsc",
     "compile": "npx buidler compile",
     "typechain": "npx buidler compile && typechain --outDir typechain --target ethers 'artifacts/*.json'",
     "test": "npx buidler test",
@@ -46,5 +47,8 @@
   "bugs": {
     "url": "https://github.com/darioAnongba/booking-system-smart-contracts/issues"
   },
-  "homepage": "https://github.com/darioAnongba/booking-system-smart-contracts#readme"
+  "homepage": "https://github.com/darioAnongba/booking-system-smart-contracts#readme",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  }
 }

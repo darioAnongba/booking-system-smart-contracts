@@ -26,3 +26,6 @@ export interface TypedFunctionDescription<
 > extends FunctionDescription {
   encode: T["encode"];
 }
+
+export * from "./CompanyAuthentication";
+export * from "./CompanyAuthenticationFactory";

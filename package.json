@@ -21,7 +21,7 @@
     "typescript": "^3.7.2"
   },
   "scripts": {
-    "build": "rimraf artifacts && npm run compile && npm run typechain && tsc",
+    "build": "rimraf artifacts && rimraf typechain && npm run compile && npm run typechain && tsc",
     "compile": "npx buidler compile",
     "typechain": "npx buidler compile && typechain --outDir typechain --target ethers 'artifacts/*.json'",
     "test": "npx buidler test",

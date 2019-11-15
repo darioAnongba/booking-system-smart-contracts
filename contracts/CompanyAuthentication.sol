@@ -10,6 +10,7 @@ contract CompanyAuthentication {
     uint256 private companiesCount;
 
     struct User {
+        string name; // For convenience, won't be added to Blockchain normally
         uint256 companyId;
         uint256 role;
     }
@@ -20,10 +21,10 @@ contract CompanyAuthentication {
 
     event CompanyAdded(address addedBy, uint256 id);
     event UserAdded(address addedBy, address userAddress);
-    event UserRemoved(address addedBy, address userAddress);
+    event UserRemoved(address removedBy, address userAddress);
 
     /**
-     * Verifies that the called has the admin role
+     * Verifies that the user has the admin role
      */
     modifier onlyAdmin() {
         require(users[msg.sender].role == ADMIN_ROLE, "Not enough permissions: Admins");
@@ -31,16 +32,16 @@ contract CompanyAuthentication {
     }
 
     /**
-     * Verifies that the called is a registered user
+     * Verifies that the user is registered
      */
     modifier onlyUser() {
         require(isUserRegistered(), "Not enough permissions: Users");
         _;
     }
 
-    constructor(string memory companyName) public {
+    constructor(string memory companyName, string memory userName) public {
         _addCompany(companyName);
-        _addUser(msg.sender, true, companiesCount);
+        _addUser(msg.sender, userName, true, companiesCount);
     }
 
     /**
@@ -62,11 +63,11 @@ contract CompanyAuthentication {
     /**
      * Adds a user
      */
-    function addUser(address userAddress, bool isAdmin, uint256 companyId) public onlyAdmin returns (bool) {
+    function addUser(address userAddress, string memory name, bool isAdmin, uint256 companyId) public onlyAdmin returns (bool) {
         require(userAddress != address(0), "Invalid 0x0 address");
-        require(users[msg.sender].companyId == companyId, "Not enough permissions: Company");
+        require(bytes(companies[companyId].name).length != 0, "Company not found");
 
-        return _addUser(userAddress, isAdmin, companyId);
+        return _addUser(userAddress, name, isAdmin, companyId);
     }
 
     /**
@@ -96,8 +97,8 @@ contract CompanyAuthentication {
 
     // No remove or update user, just add a new one to override
 
-    function _addUser(address userAddress, bool isAdmin, uint256 companyId) private returns (bool) {
-        User memory user = User(companyId, isAdmin ? ADMIN_ROLE : USER_ROLE);
+    function _addUser(address userAddress, string memory name, bool isAdmin, uint256 companyId) private returns (bool) {
+        User memory user = User(name, companyId, isAdmin ? ADMIN_ROLE : USER_ROLE);
         users[userAddress] = user;
 
         emit UserAdded(msg.sender, userAddress);

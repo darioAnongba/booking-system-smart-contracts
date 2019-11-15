@@ -12,6 +12,15 @@ import {
 
 interface CompanyAuthenticationInterface extends Interface {
   functions: {
+    addUser: TypedFunctionDescription<{
+      encode([userAddress, name, isAdmin, companyId]: [
+        string,
+        string,
+        boolean,
+        BigNumberish
+      ]): string;
+    }>;
+
     getCompany: TypedFunctionDescription<{
       encode([id]: [BigNumberish]): string;
     }>;
@@ -29,14 +38,6 @@ interface CompanyAuthenticationInterface extends Interface {
     addCompany: TypedFunctionDescription<{
       encode([companyName]: [string]): string;
     }>;
-
-    addUser: TypedFunctionDescription<{
-      encode([userAddress, isAdmin, companyId]: [
-        string,
-        boolean,
-        BigNumberish
-      ]): string;
-    }>;
   };
 
   events: {
@@ -49,7 +50,7 @@ interface CompanyAuthenticationInterface extends Interface {
     }>;
 
     UserRemoved: TypedEventDescription<{
-      encodeTopics([addedBy, userAddress]: [null, null]): string[];
+      encodeTopics([removedBy, userAddress]: [null, null]): string[];
     }>;
   };
 }
@@ -71,11 +72,19 @@ export class CompanyAuthentication extends Contract {
   interface: CompanyAuthenticationInterface;
 
   functions: {
+    addUser(
+      userAddress: string,
+      name: string,
+      isAdmin: boolean,
+      companyId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
     getCompany(id: BigNumberish): Promise<{ name: string }>;
 
     getUser(
       userAddress: string
-    ): Promise<{ companyId: BigNumber; role: BigNumber }>;
+    ): Promise<{ name: string; companyId: BigNumber; role: BigNumber }>;
 
     isUserRegistered(): Promise<boolean>;
 
@@ -88,20 +97,21 @@ export class CompanyAuthentication extends Contract {
       companyName: string,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
-
-    addUser(
-      userAddress: string,
-      isAdmin: boolean,
-      companyId: BigNumberish,
-      overrides?: TransactionOverrides
-    ): Promise<ContractTransaction>;
   };
+
+  addUser(
+    userAddress: string,
+    name: string,
+    isAdmin: boolean,
+    companyId: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
 
   getCompany(id: BigNumberish): Promise<{ name: string }>;
 
   getUser(
     userAddress: string
-  ): Promise<{ companyId: BigNumber; role: BigNumber }>;
+  ): Promise<{ name: string; companyId: BigNumber; role: BigNumber }>;
 
   isUserRegistered(): Promise<boolean>;
 
@@ -115,22 +125,22 @@ export class CompanyAuthentication extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
-  addUser(
-    userAddress: string,
-    isAdmin: boolean,
-    companyId: BigNumberish,
-    overrides?: TransactionOverrides
-  ): Promise<ContractTransaction>;
-
   filters: {
     CompanyAdded(addedBy: null, id: null): EventFilter;
 
     UserAdded(addedBy: null, userAddress: null): EventFilter;
 
-    UserRemoved(addedBy: null, userAddress: null): EventFilter;
+    UserRemoved(removedBy: null, userAddress: null): EventFilter;
   };
 
   estimate: {
+    addUser(
+      userAddress: string,
+      name: string,
+      isAdmin: boolean,
+      companyId: BigNumberish
+    ): Promise<BigNumber>;
+
     getCompany(id: BigNumberish): Promise<BigNumber>;
 
     getUser(userAddress: string): Promise<BigNumber>;
@@ -140,11 +150,5 @@ export class CompanyAuthentication extends Contract {
     removeUser(userAddress: string): Promise<BigNumber>;
 
     addCompany(companyName: string): Promise<BigNumber>;
-
-    addUser(
-      userAddress: string,
-      isAdmin: boolean,
-      companyId: BigNumberish
-    ): Promise<BigNumber>;
   };
 }

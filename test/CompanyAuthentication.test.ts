@@ -13,9 +13,12 @@ describe("CompanyAuthentication", () => {
   let [adminWallet, userWallet, anonymousWallet] = getWallets(provider);
   let auth: CompanyAuthentication;
 
+  const mockUserName = "Dario Anongba Varela";
+
   beforeEach(async () => {
     auth = (await deployContract(adminWallet, CompanyAuthenticationArtifact, [
-      "Coca Cola"
+      "Coca Cola",
+      mockUserName
     ])) as CompanyAuthentication;
 
     const isUserRegistered = await auth.isUserRegistered();
@@ -42,10 +45,10 @@ describe("CompanyAuthentication", () => {
     });
 
     it("should fail to add a company as a non admin", async () => {
-      const bookingSystemAsUser = auth.connect(userWallet);
+      const authAsUser = auth.connect(userWallet);
 
       try {
-        await bookingSystemAsUser.addCompany("Pepsi");
+        await authAsUser.addCompany("Pepsi");
         expect.fail();
       } catch (error) {
         expect(error.message).to.equal(
@@ -68,9 +71,9 @@ describe("CompanyAuthentication", () => {
       expect(addedUser.companyId).to.equal(companyId);
       expect(addedUser.role).to.equal(2);
 
-      const bookingSystemAsUser = auth.connect(userWallet);
+      const authAsUser = auth.connect(userWallet);
 
-      const isUserRegistered = await bookingSystemAsUser.isUserRegistered();
+      const isUserRegistered = await authAsUser.isUserRegistered();
       expect(isUserRegistered).to.be.true;
     });
 
@@ -82,15 +85,15 @@ describe("CompanyAuthentication", () => {
       expect(addedUser.role).to.equal(1);
     });
 
-    it("should fail to add user if not from same company", async () => {
-      const companyId = 2;
+    it("should fail to add user if company does not exist", async () => {
+      const companyId = 3;
 
       try {
-        await auth.addUser(userWallet.address, false, companyId);
+        await auth.addUser(userWallet.address, mockUserName, false, companyId);
         expect.fail();
       } catch (error) {
         expect(error.message).to.equal(
-          "VM Exception while processing transaction: revert Not enough permissions: Company"
+          "VM Exception while processing transaction: revert Company not found"
         );
       }
     });
@@ -99,11 +102,12 @@ describe("CompanyAuthentication", () => {
       const companyId = 1;
       await addUser(userWallet.address, false, companyId);
 
-      const bookingSystemAsUser = auth.connect(userWallet);
+      const authAsUser = auth.connect(userWallet);
 
       try {
-        await bookingSystemAsUser.addUser(
+        await authAsUser.addUser(
           anonymousWallet.address,
+          mockUserName,
           false,
           companyId
         );
@@ -116,14 +120,58 @@ describe("CompanyAuthentication", () => {
     });
 
     it("should fail to get user if not user", async () => {
-      const bookingSystemAsUser = auth.connect(anonymousWallet);
+      const authAsUser = auth.connect(anonymousWallet);
 
       try {
-        await bookingSystemAsUser.getUser(adminWallet.address);
+        await authAsUser.getUser(adminWallet.address);
         expect.fail();
       } catch (error) {
         expect(error.message).to.equal(
           "VM Exception while processing transaction: revert Not enough permissions: Users"
+        );
+      }
+    });
+
+    it("should remove a user successfully as admin", async () => {
+      const companyId = 1;
+      await addUser(userWallet.address, true, companyId);
+
+      const tx = await auth.removeUser(userWallet.address);
+      const txReceipt = await tx.wait();
+
+      const eventObj = txReceipt.events![0];
+      const args = eventObj.args as any;
+      expect(eventObj.event).to.equal("UserRemoved");
+      expect(args.removedBy).to.equal(adminWallet.address);
+      expect(args.userAddress).to.equal(userWallet.address);
+    });
+
+    it("should fail to remove user if not admin", async () => {
+      const companyId = 1;
+      await addUser(userWallet.address, false, companyId);
+
+      const authAsUser = auth.connect(userWallet);
+
+      try {
+        await authAsUser.removeUser(adminWallet.address);
+        expect.fail();
+      } catch (error) {
+        expect(error.message).to.equal(
+          "VM Exception while processing transaction: revert Not enough permissions: Admins"
+        );
+      }
+    });
+
+    it("should fail to remove user if not not from same company", async () => {
+      const companyId = 2;
+      await addUser(userWallet.address, false, companyId);
+
+      try {
+        await auth.removeUser(userWallet.address);
+        expect.fail();
+      } catch (error) {
+        expect(error.message).to.equal(
+          "VM Exception while processing transaction: revert Not enough permissions: Company"
         );
       }
     });
@@ -133,7 +181,12 @@ describe("CompanyAuthentication", () => {
       isAdmin: boolean,
       companyId: number
     ) => {
-      const tx = await auth.addUser(userAddress, isAdmin, companyId);
+      const tx = await auth.addUser(
+        userAddress,
+        mockUserName,
+        isAdmin,
+        companyId
+      );
       const txReceipt = await tx.wait();
 
       const eventObj = txReceipt.events![0];

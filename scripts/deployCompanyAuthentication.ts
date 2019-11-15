@@ -3,7 +3,7 @@ import { ethers } from "@nomiclabs/buidler";
 async function main() {
   const factory = await ethers.getContract("CompanyAuthentication");
 
-  let contract = await factory.deploy("Coca Cola");
+  let contract = await factory.deploy("Coca Cola", "Dario Anongba Varela");
   await contract.deployed();
 
   console.log("Contract address: ", contract.address);

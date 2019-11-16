@@ -4,7 +4,7 @@ Two smart contracts are deployed to use the Decentralized Booking System
 
 ## CompanyAuthentication
 
-Authentication system that enables creating companies and addind users to them
+Authentication system that enables creating companies and adding users to them
 
 - **Contract address**: 0x54ae267061E40ad42cdC9D5c48991b1FF56F7D5d
 - **Transaction hash**: 0x47d214056d20ae9b441eefe6b552af9098410047021464fa7cba1b80ceac43d0

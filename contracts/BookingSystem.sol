@@ -14,7 +14,7 @@ contract BookingSystem {
 
     struct Event {
         address owner;
-        string name;
+        string title;
         uint16 room;
         uint16 year;
         uint8 month;
@@ -23,14 +23,14 @@ contract BookingSystem {
         uint8 endTime;
     }
 
-    event EventAdded(address addedBy, uint256 id, Event newEvent);
+    event EventAdded(address addedBy, uint256 id);
     event EventRemoved(address removedBy, uint256 id);
 
     /**
      * Verifies that the user is registered
      */
     modifier onlyUser() {
-        require(_auth.isUserRegistered(), "Not enough permissions: Users");
+        require(_auth.isUserRegistered(msg.sender), "Not enough permissions: Users");
         _;
     }
 
@@ -41,10 +41,24 @@ contract BookingSystem {
     }
 
     /**
+     * Gets the number of rooms
+     */
+    function getNbRooms() public onlyUser view returns (uint16) {
+        return _nbRooms;
+    }
+
+    /**
+     * Gets an event
+     */
+    function getEvent(uint256 id) public onlyUser view returns (Event memory) {
+        return _events[id];
+    }
+
+    /**
      * Adds a new event
      */
     function addEvent(
-        string memory name,
+        string memory title,
         uint16 room,
         uint16 year,
         uint8 month,
@@ -55,9 +69,9 @@ contract BookingSystem {
         _verifyParams(room, month, day, startTime, endTime);
 
         bytes32 encodedDate = _encodeDate(year, month, day);
-        require(_isRangeAvailable(room, encodedDate, startTime, endTime));
+        _verifyAvailability(room, encodedDate, startTime, endTime);
 
-        Event memory newEvent = Event(msg.sender, name, room, year, month, day, startTime, endTime);
+        Event memory newEvent = Event(msg.sender, title, room, year, month, day, startTime, endTime);
         return _addEvent(newEvent);
     }
 
@@ -92,7 +106,7 @@ contract BookingSystem {
         return true;
     }
 
-    function _isRangeAvailable(
+    function _verifyAvailability(
         uint16 room,
         bytes32 encodedDate,
         uint8 startTime,
@@ -101,10 +115,7 @@ contract BookingSystem {
         mapping(uint8 => bool) storage timeAvailabilities = _availabilities[room][encodedDate];
 
         for(uint8 i = startTime; i < endTime; i++) {
-            bool isAvailable = timeAvailabilities[i];
-            if (!isAvailable) {
-                return false;
-            }
+            require(!timeAvailabilities[i], "Desired time range is not available");
         }
 
         return true;
@@ -119,13 +130,13 @@ contract BookingSystem {
         _eventCount = _eventCount + 1;
         _events[_eventCount] = newEvent;
 
-        emit EventAdded(msg.sender, _eventCount, newEvent);
+        emit EventAdded(msg.sender, _eventCount);
 
         return true;
     }
 
     function _removeEvent(uint256 id) private returns (bool) {
-        Event memory eventToRemove = _events[id];
+        Event memory eventToRemove = getEvent(id);
 
         for(uint8 i = eventToRemove.startTime; i < eventToRemove.endTime; i++) {
             bytes32 encodedDate = _encodeDate(eventToRemove.year, eventToRemove.month, eventToRemove.day);

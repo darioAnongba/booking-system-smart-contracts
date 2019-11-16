@@ -21,10 +21,8 @@ describe("CompanyAuthentication", () => {
       mockUserName
     ])) as CompanyAuthentication;
 
-    const isUserRegistered = await auth.isUserRegistered();
-    expect(isUserRegistered).to.be.true;
-
-    const user = await auth.getUser(adminWallet.address);
+    const user = await auth.login();
+    expect(user.name).to.eq(mockUserName);
     expect(user.companyId).to.equal(1);
     expect(user.role).to.eq(1);
   });
@@ -71,9 +69,7 @@ describe("CompanyAuthentication", () => {
       expect(addedUser.companyId).to.equal(companyId);
       expect(addedUser.role).to.equal(2);
 
-      const authAsUser = auth.connect(userWallet);
-
-      const isUserRegistered = await authAsUser.isUserRegistered();
+      const isUserRegistered = await auth.isUserRegistered(userWallet.address);
       expect(isUserRegistered).to.be.true;
     });
 
@@ -83,6 +79,9 @@ describe("CompanyAuthentication", () => {
       const addedUser = await addUser(userWallet.address, true, 1);
       expect(addedUser.companyId).to.equal(companyId);
       expect(addedUser.role).to.equal(1);
+
+      const isUserRegistered = await auth.isUserRegistered(userWallet.address);
+      expect(isUserRegistered).to.be.true;
     });
 
     it("should fail to add user if company does not exist", async () => {
@@ -162,7 +161,7 @@ describe("CompanyAuthentication", () => {
       }
     });
 
-    it("should fail to remove user if not not from same company", async () => {
+    it("should fail to remove user if not from same company", async () => {
       const companyId = 2;
       await addUser(userWallet.address, false, companyId);
 

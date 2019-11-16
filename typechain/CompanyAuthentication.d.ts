@@ -12,6 +12,10 @@ import {
 
 interface CompanyAuthenticationInterface extends Interface {
   functions: {
+    isUserRegistered: TypedFunctionDescription<{
+      encode([userAddress]: [string]): string;
+    }>;
+
     addUser: TypedFunctionDescription<{
       encode([userAddress, name, isAdmin, companyId]: [
         string,
@@ -29,11 +33,11 @@ interface CompanyAuthenticationInterface extends Interface {
       encode([userAddress]: [string]): string;
     }>;
 
-    isUserRegistered: TypedFunctionDescription<{ encode([]: []): string }>;
-
     removeUser: TypedFunctionDescription<{
       encode([userAddress]: [string]): string;
     }>;
+
+    login: TypedFunctionDescription<{ encode([]: []): string }>;
 
     addCompany: TypedFunctionDescription<{
       encode([companyName]: [string]): string;
@@ -72,6 +76,8 @@ export class CompanyAuthentication extends Contract {
   interface: CompanyAuthenticationInterface;
 
   functions: {
+    isUserRegistered(userAddress: string): Promise<boolean>;
+
     addUser(
       userAddress: string,
       name: string,
@@ -86,18 +92,20 @@ export class CompanyAuthentication extends Contract {
       userAddress: string
     ): Promise<{ name: string; companyId: BigNumber; role: BigNumber }>;
 
-    isUserRegistered(): Promise<boolean>;
-
     removeUser(
       userAddress: string,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
+
+    login(): Promise<{ name: string; companyId: BigNumber; role: BigNumber }>;
 
     addCompany(
       companyName: string,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
   };
+
+  isUserRegistered(userAddress: string): Promise<boolean>;
 
   addUser(
     userAddress: string,
@@ -113,12 +121,12 @@ export class CompanyAuthentication extends Contract {
     userAddress: string
   ): Promise<{ name: string; companyId: BigNumber; role: BigNumber }>;
 
-  isUserRegistered(): Promise<boolean>;
-
   removeUser(
     userAddress: string,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
+
+  login(): Promise<{ name: string; companyId: BigNumber; role: BigNumber }>;
 
   addCompany(
     companyName: string,
@@ -134,6 +142,8 @@ export class CompanyAuthentication extends Contract {
   };
 
   estimate: {
+    isUserRegistered(userAddress: string): Promise<BigNumber>;
+
     addUser(
       userAddress: string,
       name: string,
@@ -145,9 +155,9 @@ export class CompanyAuthentication extends Contract {
 
     getUser(userAddress: string): Promise<BigNumber>;
 
-    isUserRegistered(): Promise<BigNumber>;
-
     removeUser(userAddress: string): Promise<BigNumber>;
+
+    login(): Promise<BigNumber>;
 
     addCompany(companyName: string): Promise<BigNumber>;
   };

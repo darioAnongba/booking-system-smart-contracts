@@ -25,7 +25,7 @@
     "compile": "npx buidler compile",
     "typechain": "npx buidler compile && typechain --outDir typechain --target ethers 'artifacts/*.json'",
     "test": "npx buidler test",
-    "deploy:rinkeby:auth": "npx buidler run --network rinkeby scripts/deployCompanyAuthentication.ts"
+    "deploy:rinkeby": "npx buidler run --network rinkeby scripts/deployContracts.ts"
   },
   "repository": {
     "type": "git",

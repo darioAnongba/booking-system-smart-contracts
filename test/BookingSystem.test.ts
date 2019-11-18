@@ -11,12 +11,14 @@ import { CompanyAuthentication } from "../typechain/CompanyAuthentication";
 chai.use(solidity);
 const { expect } = chai;
 
+const MOCK_TITLE = "Event title";
 const MOCK_ROOM = 2;
 const MOCK_YEAR = 2019;
 const MOCK_MONTH = 11;
 const MOCK_DAY = 31;
 const MOCK_START_TIME = 9;
 const MOCK_END_TIME = 11;
+const MOCK_TIMEZONE = "America/New_York";
 
 describe("BookingSystem", () => {
   const provider = ethers.provider;
@@ -167,12 +169,14 @@ describe("BookingSystem", () => {
     it("should successfully add an event as a user", async () => {
       const event = await addEvent();
 
-      expect(event.room).to.equal(2);
+      expect(event.title).to.equal(MOCK_TITLE);
+      expect(event.room).to.equal(MOCK_ROOM);
       expect(event.year).to.equal(MOCK_YEAR);
       expect(event.month).to.equal(MOCK_MONTH);
       expect(event.day).to.equal(MOCK_DAY);
       expect(event.startTime).to.equal(MOCK_START_TIME);
       expect(event.endTime).to.equal(MOCK_END_TIME);
+      expect(event.timezone).to.equal(MOCK_TIMEZONE);
     });
 
     it("should successfully add non conflicting events on the same day for the same room", async () => {
@@ -221,7 +225,8 @@ describe("BookingSystem", () => {
           MOCK_MONTH,
           MOCK_DAY,
           MOCK_START_TIME,
-          MOCK_END_TIME
+          MOCK_END_TIME,
+          ""
         );
         expect.fail();
       } catch (error) {
@@ -301,13 +306,14 @@ describe("BookingSystem", () => {
     endTime: number = MOCK_END_TIME
   ) => {
     const tx = await bookingSystem.addEvent(
-      "Event title",
+      MOCK_TITLE,
       roomNumber,
       year,
       month,
       day,
       startTime,
-      endTime
+      endTime,
+      MOCK_TIMEZONE
     );
     const txReceipt = await tx.wait();
 

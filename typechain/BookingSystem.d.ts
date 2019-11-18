@@ -23,14 +23,15 @@ interface BookingSystemInterface extends Interface {
     }>;
 
     addEvent: TypedFunctionDescription<{
-      encode([title, room, year, month, day, startTime, endTime]: [
+      encode([title, room, year, month, day, startTime, endTime, timezone]: [
         string,
         BigNumberish,
         BigNumberish,
         BigNumberish,
         BigNumberish,
         BigNumberish,
-        BigNumberish
+        BigNumberish,
+        string
       ]): string;
     }>;
   };
@@ -81,6 +82,7 @@ export class BookingSystem extends Contract {
       day: number;
       startTime: number;
       endTime: number;
+      timezone: string;
     }>;
 
     addEvent(
@@ -91,6 +93,7 @@ export class BookingSystem extends Contract {
       day: BigNumberish,
       startTime: BigNumberish,
       endTime: BigNumberish,
+      timezone: string,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
   };
@@ -113,6 +116,7 @@ export class BookingSystem extends Contract {
     day: number;
     startTime: number;
     endTime: number;
+    timezone: string;
   }>;
 
   addEvent(
@@ -123,6 +127,7 @@ export class BookingSystem extends Contract {
     day: BigNumberish,
     startTime: BigNumberish,
     endTime: BigNumberish,
+    timezone: string,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
@@ -146,7 +151,8 @@ export class BookingSystem extends Contract {
       month: BigNumberish,
       day: BigNumberish,
       startTime: BigNumberish,
-      endTime: BigNumberish
+      endTime: BigNumberish,
+      timezone: string
     ): Promise<BigNumber>;
   };
 }

@@ -14,13 +14,14 @@ contract BookingSystem {
 
     struct Event {
         address owner;
-        string title;
+        string title; // Optional
         uint16 room;
         uint16 year;
         uint8 month;
         uint8 day;
         uint8 startTime;
         uint8 endTime;
+        string timezone; // Optional 
     }
 
     event EventAdded(address addedBy, uint256 id);
@@ -64,14 +65,15 @@ contract BookingSystem {
         uint8 month,
         uint8 day,
         uint8 startTime,
-        uint8 endTime
+        uint8 endTime,
+        string memory timezone
     ) public onlyUser returns (bool) {
         _verifyParams(room, month, day, startTime, endTime);
 
         bytes32 encodedDate = _encodeDate(year, month, day);
         _verifyAvailability(room, encodedDate, startTime, endTime);
 
-        Event memory newEvent = Event(msg.sender, title, room, year, month, day, startTime, endTime);
+        Event memory newEvent = Event(msg.sender, title, room, year, month, day, startTime, endTime, timezone);
         return _addEvent(newEvent);
     }
 
